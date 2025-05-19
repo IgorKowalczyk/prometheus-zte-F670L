@@ -17,7 +17,6 @@ type DeviceInfo struct {
 	SerialNumber            string
 	Model                   string
 	HardwareVersion         string
-	OnuAlias                string
 
 	CPUUsage1   int
 	CPUUsage2   int
@@ -31,9 +30,11 @@ type DeviceInfo struct {
 func (s *Session) LoadDeviceInfo() (*DeviceInfo, error) {
 	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=statusMgr&Menu3Location=0&_=" + strconv.FormatInt(time.Now().Unix(), 10))
 	resp, err := s.Get(s.Endpoint + "/?_type=menuData&_tag=devmgr_statusmgr_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10))
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 
 	var result InformationResponse
@@ -104,14 +105,13 @@ func (result InformationResponse) Convert() *DeviceInfo {
 				deviceInfo.Model = result.OBJDEVINFOID.Instance.ParaValue[i]
 			case "HardwareVer":
 				deviceInfo.HardwareVersion = result.OBJDEVINFOID.Instance.ParaValue[i]
-			case "OnuAlias":
-				deviceInfo.OnuAlias = result.OBJDEVINFOID.Instance.ParaValue[i]
 			}
 		}
 	}
 
 	for i, name := range result.OBJCPUMEMUSAGEID.Instance.ParaName {
 		if i < len(result.OBJCPUMEMUSAGEID.Instance.ParaValue) {
+
 			switch name {
 			case "CpuUsage1":
 				deviceInfo.CPUUsage1, _ = strconv.Atoi(result.OBJCPUMEMUSAGEID.Instance.ParaValue[i])

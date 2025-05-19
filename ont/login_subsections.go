@@ -14,6 +14,7 @@ type SessionTokenResponse struct {
 
 func (s *Session) GetSessionToken() (string, error) {
 	resp, err := s.Get(s.Endpoint + "/?_type=loginData&_tag=login_entry")
+
 	if err != nil {
 		return "", err
 	}
@@ -40,5 +41,6 @@ func (s *Session) GetLoginToken() (string, error) {
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return "", err
 	}
+
 	return result.Value, nil
 }

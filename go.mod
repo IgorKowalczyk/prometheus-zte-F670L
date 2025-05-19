@@ -1,4 +1,4 @@
-module PrometheusF6005
+module prometheus_F670L
 
 go 1.23
 

@@ -25,13 +25,11 @@ func Login(endpoint, username, password string) (*Session, error) {
 		Endpoint: endpoint,
 	}
 
-	// Get session token
 	sessionToken, err := session.GetSessionToken()
 	if err != nil {
 		panic(err)
 	}
 
-	// Get login token
 	loginToken, err := session.GetLoginToken()
 	if err != nil {
 		panic(err)
@@ -48,19 +46,22 @@ func Login(endpoint, username, password string) (*Session, error) {
 	}
 
 	resp, err := session.Post("http://192.168.1.1/?_type=loginData&_tag=login_entry", "application/x-www-form-urlencoded; charset=UTF-8", strings.NewReader(payload.Encode()))
+
 	if err != nil {
 		panic(err)
 	}
+
+
 	defer resp.Body.Close()
 
 	var result LoginResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
-
 	if result.LoginNeedRefresh {
 		_, _ = session.Get("http://192.168.1.1/")
 		return session, nil
 	}
+
 	return nil, errors.New("failed to login")
 }

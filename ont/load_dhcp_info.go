@@ -3,6 +3,7 @@ package ont
 import (
 	"encoding/xml"
 	"errors"
+	"io"
 	"strconv"
 	"time"
 )
@@ -23,7 +24,10 @@ func (s *Session) LoadLanDHCPInfo() ([]LanDHCPHost, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
 
 	var result lanDHCPHostsResponse
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {

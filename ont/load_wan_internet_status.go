@@ -3,6 +3,7 @@ package ont
 import (
 	"encoding/xml"
 	"errors"
+	"io"
 	"strconv"
 	"time"
 )
@@ -56,7 +57,10 @@ func (s *Session) LoadWanInternetStatus() (*WanInternetStatus, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
 
 	var result wanInternetStatusResponse
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {

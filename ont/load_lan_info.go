@@ -3,6 +3,7 @@ package ont
 import (
 	"encoding/xml"
 	"errors"
+	"io"
 	"strconv"
 	"time"
 )
@@ -39,7 +40,10 @@ func (s *Session) LoadLanInfo() (*LanInfo, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
 
 	var result LanInfoResponse
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {

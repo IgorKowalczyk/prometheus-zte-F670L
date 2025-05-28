@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -51,7 +52,10 @@ func Login(endpoint, username, password string) (*Session, error) {
 		panic(err)
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
 
 	var result LoginResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {

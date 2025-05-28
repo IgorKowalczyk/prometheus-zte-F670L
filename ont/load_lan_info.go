@@ -36,18 +36,18 @@ func (s *Session) LoadLanInfo() (*LanInfo, error) {
 	resp, err := s.Get(s.Endpoint + "/?_type=menuData&_tag=status_lan_info_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10))
 
 	if err != nil {
-					return nil, err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
 	var result LanInfoResponse
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
-					return nil, err
+		return nil, err
 	}
 
 	if result.IFERRORSTR == "SessionTimeout" {
-					return nil, errors.New("session timeout")
+		return nil, errors.New("session timeout")
 	}
 
 	return result.Convert(), nil
@@ -77,48 +77,48 @@ func (result LanInfoResponse) Convert() *LanInfo {
 
 	const fieldsPerIface = 16
 	for i := 0; i+fieldsPerIface <= len(values); i += fieldsPerIface {
-					var lanInfo LanInfo
-					for j := 0; j < fieldsPerIface; j++ {
-									name := names[j]
-									val := values[i+j]
-									switch name {
-									case "InDiscard":
-													lanInfo.PacketsDiscardedIn, _ = strconv.Atoi(val)
-									case "OutDiscard":
-													lanInfo.PacketsDiscardedOut, _ = strconv.Atoi(val)
-									case "InError":
-													lanInfo.PacketsErrorIn, _ = strconv.Atoi(val)
-									case "OutError":
-													lanInfo.PacketsErrorOut, _ = strconv.Atoi(val)
-									case "InMulticast":
-													lanInfo.PacketsMulticastIn, _ = strconv.Atoi(val)
-									case "OutMulticast":
-													lanInfo.PacketsMulticastOut, _ = strconv.Atoi(val)
-									case "InUnicast":
-													lanInfo.PacketsUnicastIn, _ = strconv.Atoi(val)
-									case "OutUnicast":
-													lanInfo.PacketsUnicastOut, _ = strconv.Atoi(val)
-									case "InBytes":
-													lanInfo.BytesIn, _ = strconv.Atoi(val)
-									case "OutBytes":
-													lanInfo.BytesOut, _ = strconv.Atoi(val)
-									case "InPkts":
-													lanInfo.PacketsIn, _ = strconv.Atoi(val)
-									case "OutPkts":
-													lanInfo.PacketsOut, _ = strconv.Atoi(val)
-									case "Status":
-													lanInfo.Status, _ = strconv.Atoi(val)
-									case "Duplex":
-													lanInfo.Duplex = val
-									case "Speed":
-													lanInfo.Speed, _ = strconv.Atoi(val)
-									}
-					}
-					lanInfos = append(lanInfos, lanInfo)
+		var lanInfo LanInfo
+		for j := 0; j < fieldsPerIface; j++ {
+			name := names[j]
+			val := values[i+j]
+			switch name {
+			case "InDiscard":
+				lanInfo.PacketsDiscardedIn, _ = strconv.Atoi(val)
+			case "OutDiscard":
+				lanInfo.PacketsDiscardedOut, _ = strconv.Atoi(val)
+			case "InError":
+				lanInfo.PacketsErrorIn, _ = strconv.Atoi(val)
+			case "OutError":
+				lanInfo.PacketsErrorOut, _ = strconv.Atoi(val)
+			case "InMulticast":
+				lanInfo.PacketsMulticastIn, _ = strconv.Atoi(val)
+			case "OutMulticast":
+				lanInfo.PacketsMulticastOut, _ = strconv.Atoi(val)
+			case "InUnicast":
+				lanInfo.PacketsUnicastIn, _ = strconv.Atoi(val)
+			case "OutUnicast":
+				lanInfo.PacketsUnicastOut, _ = strconv.Atoi(val)
+			case "InBytes":
+				lanInfo.BytesIn, _ = strconv.Atoi(val)
+			case "OutBytes":
+				lanInfo.BytesOut, _ = strconv.Atoi(val)
+			case "InPkts":
+				lanInfo.PacketsIn, _ = strconv.Atoi(val)
+			case "OutPkts":
+				lanInfo.PacketsOut, _ = strconv.Atoi(val)
+			case "Status":
+				lanInfo.Status, _ = strconv.Atoi(val)
+			case "Duplex":
+				lanInfo.Duplex = val
+			case "Speed":
+				lanInfo.Speed, _ = strconv.Atoi(val)
+			}
+		}
+		lanInfos = append(lanInfos, lanInfo)
 	}
 
 	if len(lanInfos) > 0 {
-					return &lanInfos[0]
+		return &lanInfos[0]
 	}
 	return &LanInfo{}
 }

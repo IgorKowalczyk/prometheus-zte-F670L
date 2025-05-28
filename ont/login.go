@@ -51,7 +51,6 @@ func Login(endpoint, username, password string) (*Session, error) {
 		panic(err)
 	}
 
-
 	defer resp.Body.Close()
 
 	var result LoginResponse

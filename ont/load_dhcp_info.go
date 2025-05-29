@@ -29,7 +29,14 @@ type LanDHCPHostsResponse struct {
 }
 
 func (s *Session) LoadLanDHCPInfo() ([]LanDHCPHost, error) {
-	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=lanMgrIpv4&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
+	// Trigger the menu to load the DHCP host info
+	respMenu, _ := s.Get(s.Endpoint + "/?_type=menuView&_tag=lanMgrIpv4&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
+	if respMenu != nil {
+		io.Copy(io.Discard, respMenu.Body)
+		respMenu.Body.Close()
+	}
+
+	// Load the DHCP host info
 	url := s.Endpoint + "/?_type=menuData&_tag=Localnet_LanMgrIpv4_DHCPHostInfo_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
 	if err != nil {

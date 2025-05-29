@@ -50,6 +50,7 @@ type DHCPSettingsInstance struct {
 }
 
 func (s *Session) LoadLanDHCPSettings() (*LanDHCPSettings, error) {
+	// Load the DHCP settings
 	url := s.Endpoint + "/?_type=menuData&_tag=Localnet_LanMgrIpv4_DHCPBasicCfg_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
 	if err != nil {

@@ -33,6 +33,7 @@ type LanClientInstance struct {
 }
 
 func (s *Session) LoadLanClients() ([]LanClient, error) {
+	// Load the LAN clients
 	url := s.Endpoint + "/?_type=menuData&_tag=accessdev_landevs_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
 	if err != nil {

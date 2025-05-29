@@ -65,7 +65,12 @@ type wanInternetStatusInstance struct {
 }
 
 func (s *Session) LoadWanInternetStatus() (*WanInternetStatus, error) {
-	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=ethWanStatus&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
+	respMenu, _ := s.Get(s.Endpoint + "/?_type=menuView&_tag=ethWanStatus&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
+	if respMenu != nil {
+		io.Copy(io.Discard, respMenu.Body)
+		respMenu.Body.Close()
+	}
+
 	url := s.Endpoint + "/?_type=menuData&_tag=wan_internetstatus_lua.lua&TypeUplink=2&pageType=1&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
 

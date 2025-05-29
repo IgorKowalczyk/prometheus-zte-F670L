@@ -60,7 +60,14 @@ func (inst *wlanAPInstance) ToMap() map[string]string {
 }
 
 func (s *Session) LoadWlanInfo() ([]WlanAP, error) {
-	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=localNetStatus&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
+	// Trigger the menu to load the WLAN APs	info
+	respMenu, _ := s.Get(s.Endpoint + "/?_type=menuView&_tag=localNetStatus&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
+	if respMenu != nil {
+		io.Copy(io.Discard, respMenu.Body)
+		respMenu.Body.Close()
+	}
+
+	// Load the WLAN APs info
 	url := s.Endpoint + "/?_type=menuData&_tag=wlan_wlanstatus_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
 	if err != nil {

@@ -48,6 +48,22 @@ type WanInternetStatus struct {
 	ConnStatus        string
 }
 
+type wanInternetStatusResponse struct {
+	XMLName      xml.Name `xml:"ajax_response_xml_root"`
+	IFERRORPARAM string   `xml:"IF_ERRORPARAM"`
+	IFERRORTYPE  string   `xml:"IF_ERRORTYPE"`
+	IFERRORSTR   string   `xml:"IF_ERRORSTR"`
+	IFERRORID    string   `xml:"IF_ERRORID"`
+	IDWANCONFIG  struct {
+		Instance wanInternetStatusInstance `xml:"Instance"`
+	} `xml:"ID_WAN_COMFIG"`
+}
+
+type wanInternetStatusInstance struct {
+	ParaName  []string `xml:"ParaName"`
+	ParaValue []string `xml:"ParaValue"`
+}
+
 func (s *Session) LoadWanInternetStatus() (*WanInternetStatus, error) {
 	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=ethWanStatus&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
 	url := s.Endpoint + "/?_type=menuData&_tag=wan_internetstatus_lua.lua&TypeUplink=2&pageType=1&_=" + strconv.FormatInt(time.Now().Unix(), 10)
@@ -70,22 +86,6 @@ func (s *Session) LoadWanInternetStatus() (*WanInternetStatus, error) {
 		return nil, errors.New(result.IFERRORSTR)
 	}
 	return result.Convert(), nil
-}
-
-type wanInternetStatusResponse struct {
-	XMLName      xml.Name `xml:"ajax_response_xml_root"`
-	IFERRORPARAM string   `xml:"IF_ERRORPARAM"`
-	IFERRORTYPE  string   `xml:"IF_ERRORTYPE"`
-	IFERRORSTR   string   `xml:"IF_ERRORSTR"`
-	IFERRORID    string   `xml:"IF_ERRORID"`
-	IDWANCONFIG  struct {
-		Instance wanInternetStatusInstance `xml:"Instance"`
-	} `xml:"ID_WAN_COMFIG"`
-}
-
-type wanInternetStatusInstance struct {
-	ParaName  []string `xml:"ParaName"`
-	ParaValue []string `xml:"ParaValue"`
 }
 
 func (r wanInternetStatusResponse) Convert() *WanInternetStatus {

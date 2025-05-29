@@ -17,6 +17,17 @@ type LanDHCPHost struct {
 	HostName    string
 }
 
+type LanDHCPHostsResponse struct {
+	XMLName           xml.Name `xml:"ajax_response_xml_root"`
+	IFERRORPARAM      string   `xml:"IF_ERRORPARAM"`
+	IFERRORTYPE       string   `xml:"IF_ERRORTYPE"`
+	IFERRORSTR        string   `xml:"IF_ERRORSTR"`
+	IFERRORID         string   `xml:"IF_ERRORID"`
+	OBJDHCPHOSTINFOID struct {
+		Instances []dhcpHostInstance `xml:"Instance"`
+	} `xml:"OBJ_DHCPHOSTINFO_ID"`
+}
+
 func (s *Session) LoadLanDHCPInfo() ([]LanDHCPHost, error) {
 	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=lanMgrIpv4&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
 	url := s.Endpoint + "/?_type=menuData&_tag=Localnet_LanMgrIpv4_DHCPHostInfo_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
@@ -29,7 +40,7 @@ func (s *Session) LoadLanDHCPInfo() ([]LanDHCPHost, error) {
 		resp.Body.Close()
 	}()
 
-	var result lanDHCPHostsResponse
+	var result LanDHCPHostsResponse
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
@@ -37,17 +48,6 @@ func (s *Session) LoadLanDHCPInfo() ([]LanDHCPHost, error) {
 		return nil, errors.New(result.IFERRORSTR)
 	}
 	return result.Convert(), nil
-}
-
-type lanDHCPHostsResponse struct {
-	XMLName           xml.Name `xml:"ajax_response_xml_root"`
-	IFERRORPARAM      string   `xml:"IF_ERRORPARAM"`
-	IFERRORTYPE       string   `xml:"IF_ERRORTYPE"`
-	IFERRORSTR        string   `xml:"IF_ERRORSTR"`
-	IFERRORID         string   `xml:"IF_ERRORID"`
-	OBJDHCPHOSTINFOID struct {
-		Instances []dhcpHostInstance `xml:"Instance"`
-	} `xml:"OBJ_DHCPHOSTINFO_ID"`
 }
 
 type dhcpHostInstance struct {
@@ -71,7 +71,7 @@ func (inst *dhcpHostInstance) ToMap() map[string]string {
 	return m
 }
 
-func (r lanDHCPHostsResponse) Convert() []LanDHCPHost {
+func (r LanDHCPHostsResponse) Convert() []LanDHCPHost {
 	var hosts []LanDHCPHost
 	for _, inst := range r.OBJDHCPHOSTINFOID.Instances {
 		m := inst.ToMap()

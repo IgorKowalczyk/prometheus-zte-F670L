@@ -30,6 +30,25 @@ type WlanInfo struct {
 	Clients []WlanClient
 }
 
+type wlanInfoResponse struct {
+	XMLName      xml.Name `xml:"ajax_response_xml_root"`
+	IFERRORPARAM string   `xml:"IF_ERRORPARAM"`
+	IFERRORTYPE  string   `xml:"IF_ERRORTYPE"`
+	IFERRORSTR   string   `xml:"IF_ERRORSTR"`
+	IFERRORID    string   `xml:"IF_ERRORID"`
+	OBJWLANADID  struct {
+		Instances []wlanClientInstance `xml:"Instance"`
+	} `xml:"OBJ_WLAN_AD_ID"`
+	OBJWLANAPID struct {
+		Instances []wlanAPInstance `xml:"Instance"`
+	} `xml:"OBJ_WLANAP_ID"`
+}
+
+type wlanClientInstance struct {
+	ParaName  []string `xml:"ParaName"`
+	ParaValue []string `xml:"ParaValue"`
+}
+
 func (s *Session) LoadWlanClientsInfo() (*WlanInfo, error) {
 	url := s.Endpoint + "/?_type=menuData&_tag=wlan_client_stat_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
@@ -51,25 +70,6 @@ func (s *Session) LoadWlanClientsInfo() (*WlanInfo, error) {
 		return nil, errors.New(result.IFERRORSTR)
 	}
 	return result.Convert(), nil
-}
-
-type wlanInfoResponse struct {
-	XMLName      xml.Name `xml:"ajax_response_xml_root"`
-	IFERRORPARAM string   `xml:"IF_ERRORPARAM"`
-	IFERRORTYPE  string   `xml:"IF_ERRORTYPE"`
-	IFERRORSTR   string   `xml:"IF_ERRORSTR"`
-	IFERRORID    string   `xml:"IF_ERRORID"`
-	OBJWLANADID  struct {
-		Instances []wlanClientInstance `xml:"Instance"`
-	} `xml:"OBJ_WLAN_AD_ID"`
-	OBJWLANAPID struct {
-		Instances []wlanAPInstance `xml:"Instance"`
-	} `xml:"OBJ_WLANAP_ID"`
-}
-
-type wlanClientInstance struct {
-	ParaName  []string `xml:"ParaName"`
-	ParaValue []string `xml:"ParaValue"`
 }
 
 func (r wlanInfoResponse) Convert() *WlanInfo {

@@ -32,6 +32,23 @@ type LanInfo struct {
 	Speed  int
 }
 
+type LanInfoResponse struct {
+	XMLName                 xml.Name `xml:"ajax_response_xml_root"`
+	Text                    string   `xml:",chardata"`
+	IFERRORPARAM            string   `xml:"IF_ERRORPARAM"`
+	IFERRORTYPE             string   `xml:"IF_ERRORTYPE"`
+	IFERRORSTR              string   `xml:"IF_ERRORSTR"`
+	IFERRORID               string   `xml:"IF_ERRORID"`
+	OBJPONPORTBASICSTATUSID struct {
+		Text     string `xml:",chardata"`
+		Instance struct {
+			Text      string   `xml:",chardata"`
+			ParaName  []string `xml:"ParaName"`
+			ParaValue []string `xml:"ParaValue"`
+		} `xml:"Instance"`
+	} `xml:"OBJ_PON_PORT_BASIC_STATUS_ID"`
+}
+
 func (s *Session) LoadLanInfo() (*LanInfo, error) {
 	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=localNetStatus&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
 	resp, err := s.Get(s.Endpoint + "/?_type=menuData&_tag=status_lan_info_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10))
@@ -55,23 +72,6 @@ func (s *Session) LoadLanInfo() (*LanInfo, error) {
 	}
 
 	return result.Convert(), nil
-}
-
-type LanInfoResponse struct {
-	XMLName                 xml.Name `xml:"ajax_response_xml_root"`
-	Text                    string   `xml:",chardata"`
-	IFERRORPARAM            string   `xml:"IF_ERRORPARAM"`
-	IFERRORTYPE             string   `xml:"IF_ERRORTYPE"`
-	IFERRORSTR              string   `xml:"IF_ERRORSTR"`
-	IFERRORID               string   `xml:"IF_ERRORID"`
-	OBJPONPORTBASICSTATUSID struct {
-		Text     string `xml:",chardata"`
-		Instance struct {
-			Text      string   `xml:",chardata"`
-			ParaName  []string `xml:"ParaName"`
-			ParaValue []string `xml:"ParaValue"`
-		} `xml:"Instance"`
-	} `xml:"OBJ_PON_PORT_BASIC_STATUS_ID"`
 }
 
 func (result LanInfoResponse) Convert() *LanInfo {

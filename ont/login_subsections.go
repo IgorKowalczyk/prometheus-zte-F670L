@@ -20,6 +20,11 @@ func (s *Session) GetSessionToken() (string, error) {
 		return "", err
 	}
 
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
+
 	var result SessionTokenResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return "", err
@@ -37,6 +42,7 @@ func (s *Session) GetLoginToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	defer func() {
 		io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()

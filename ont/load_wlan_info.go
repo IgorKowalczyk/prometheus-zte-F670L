@@ -21,7 +21,6 @@ type WlanAP struct {
 	TotalBytesReceived string
 }
 
-// Helper struct to parse alternating ParaName/ParaValue pairs
 type wlanAPInstance struct {
 	Params []struct {
 		XMLName xml.Name
@@ -29,7 +28,23 @@ type wlanAPInstance struct {
 	} `xml:",any"`
 }
 
-// Convert Params slice to a map
+type wlanAPsResponse struct {
+	XMLName      xml.Name `xml:"ajax_response_xml_root"`
+	IFERRORPARAM string   `xml:"IF_ERRORPARAM"`
+	IFERRORTYPE  string   `xml:"IF_ERRORTYPE"`
+	IFERRORSTR   string   `xml:"IF_ERRORSTR"`
+	IFERRORID    string   `xml:"IF_ERRORID"`
+	OBJWLANAPID  struct {
+		Instances []wlanAPInstance `xml:"Instance"`
+	} `xml:"OBJ_WLANAP_ID"`
+	OBJWLANCONFIGDRVID struct {
+		Instances []wlanAPInstance `xml:"Instance"`
+	} `xml:"OBJ_WLANCONFIGDRV_ID"`
+	OBJWLANSETTINGID struct {
+		Instances []wlanAPInstance `xml:"Instance"`
+	} `xml:"OBJ_WLANSETTING_ID"`
+}
+
 func (inst *wlanAPInstance) ToMap() map[string]string {
 	m := make(map[string]string)
 	var lastKey string
@@ -68,7 +83,6 @@ func (s *Session) LoadWlanInfo() ([]WlanAP, error) {
 }
 
 func (r *wlanAPsResponse) Convert() []WlanAP {
-	// Build band map from OBJ_WLANSETTING_ID
 	bandMap := make(map[string]string)
 	for _, inst := range r.OBJWLANSETTINGID.Instances {
 		m := inst.ToMap()
@@ -95,7 +109,6 @@ func (r *wlanAPsResponse) Convert() []WlanAP {
 		}
 		wlanViewName := m["WLANViewName"]
 
-		// Find BSSID, Channel, TotalBytesSent, TotalBytesReceived from OBJ_WLANCONFIGDRV_ID
 		for _, drv := range r.OBJWLANCONFIGDRVID.Instances {
 			drvMap := drv.ToMap()
 			if drvMap["_InstID"] == ap.InstID {
@@ -110,21 +123,4 @@ func (r *wlanAPsResponse) Convert() []WlanAP {
 		aps = append(aps, ap)
 	}
 	return aps
-}
-
-type wlanAPsResponse struct {
-	XMLName      xml.Name `xml:"ajax_response_xml_root"`
-	IFERRORPARAM string   `xml:"IF_ERRORPARAM"`
-	IFERRORTYPE  string   `xml:"IF_ERRORTYPE"`
-	IFERRORSTR   string   `xml:"IF_ERRORSTR"`
-	IFERRORID    string   `xml:"IF_ERRORID"`
-	OBJWLANAPID  struct {
-		Instances []wlanAPInstance `xml:"Instance"`
-	} `xml:"OBJ_WLANAP_ID"`
-	OBJWLANCONFIGDRVID struct {
-		Instances []wlanAPInstance `xml:"Instance"`
-	} `xml:"OBJ_WLANCONFIGDRV_ID"`
-	OBJWLANSETTINGID struct {
-		Instances []wlanAPInstance `xml:"Instance"`
-	} `xml:"OBJ_WLANSETTING_ID"`
 }

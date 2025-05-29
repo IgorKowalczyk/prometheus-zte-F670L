@@ -28,6 +28,27 @@ type LanDHCPSettings struct {
 	IPv6AssignLANIP string
 }
 
+type LanDHCPSettingsResponse struct {
+	XMLName                xml.Name `xml:"ajax_response_xml_root"`
+	IFERRORPARAM           string   `xml:"IF_ERRORPARAM"`
+	IFERRORTYPE            string   `xml:"IF_ERRORTYPE"`
+	IFERRORSTR             string   `xml:"IF_ERRORSTR"`
+	IFERRORID              string   `xml:"IF_ERRORID"`
+	OBJBr0AndDhcpsHosCfgID struct {
+		Instance DHCPSettingsInstance `xml:"Instance"`
+	} `xml:"OBJ_Br0AndDhcpsHosCfg_ID"`
+	OBJLANDNSID struct {
+		Instance DHCPSettingsInstance `xml:"Instance"`
+	} `xml:"OBJ_LANDNS_ID"`
+}
+
+type DHCPSettingsInstance struct {
+	Params []struct {
+		XMLName xml.Name
+		Value   string `xml:",chardata"`
+	} `xml:",any"`
+}
+
 func (s *Session) LoadLanDHCPSettings() (*LanDHCPSettings, error) {
 	url := s.Endpoint + "/?_type=menuData&_tag=Localnet_LanMgrIpv4_DHCPBasicCfg_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
@@ -39,7 +60,7 @@ func (s *Session) LoadLanDHCPSettings() (*LanDHCPSettings, error) {
 		resp.Body.Close()
 	}()
 
-	var result lanDHCPSettingsResponse
+	var result LanDHCPSettingsResponse
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
@@ -49,28 +70,7 @@ func (s *Session) LoadLanDHCPSettings() (*LanDHCPSettings, error) {
 	return result.Convert(), nil
 }
 
-type lanDHCPSettingsResponse struct {
-	XMLName                xml.Name `xml:"ajax_response_xml_root"`
-	IFERRORPARAM           string   `xml:"IF_ERRORPARAM"`
-	IFERRORTYPE            string   `xml:"IF_ERRORTYPE"`
-	IFERRORSTR             string   `xml:"IF_ERRORSTR"`
-	IFERRORID              string   `xml:"IF_ERRORID"`
-	OBJBr0AndDhcpsHosCfgID struct {
-		Instance dhcpSettingsInstance `xml:"Instance"`
-	} `xml:"OBJ_Br0AndDhcpsHosCfg_ID"`
-	OBJLANDNSID struct {
-		Instance dhcpSettingsInstance `xml:"Instance"`
-	} `xml:"OBJ_LANDNS_ID"`
-}
-
-type dhcpSettingsInstance struct {
-	Params []struct {
-		XMLName xml.Name
-		Value   string `xml:",chardata"`
-	} `xml:",any"`
-}
-
-func (inst *dhcpSettingsInstance) ToMap() map[string]string {
+func (inst *DHCPSettingsInstance) ToMap() map[string]string {
 	m := make(map[string]string)
 	var lastKey string
 	for _, p := range inst.Params {
@@ -84,7 +84,7 @@ func (inst *dhcpSettingsInstance) ToMap() map[string]string {
 	return m
 }
 
-func (r lanDHCPSettingsResponse) Convert() *LanDHCPSettings {
+func (r LanDHCPSettingsResponse) Convert() *LanDHCPSettings {
 	m := r.OBJBr0AndDhcpsHosCfgID.Instance.ToMap()
 	m2 := r.OBJLANDNSID.Instance.ToMap()
 	leaseTime, _ := strconv.Atoi(m["LeaseTime"])

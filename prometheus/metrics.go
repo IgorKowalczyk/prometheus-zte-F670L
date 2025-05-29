@@ -83,8 +83,6 @@ var (
 		"ont_wan_internet_status",
 		"WAN Internet status info (all fields as labels, value is 1 if present)",
 		[]string{
-			// "conn_trigger", "uptime", "is_nat", "username", "password", "conn_error", "xdsl_mode", "wan_type", "wan_cname", "ip_mode", "trans_type", "pppoe_service_name", "mode", "uplink", "page_type", "vlan_enable", "str_serv_list", "conn_status6", "inst_id", "enable", "dscp", "priority", "vlanid", "subnet_mask", "auth_type", "mtu", "dns1", "dns3", "gateway", "work_if_mac", "serv_list", "link_mode", "is_def_gw", "ip_address", "dns2", "enable_pass_through", "conn_status",
-
 			"conn_trigger", "uptime", "is_nat", "conn_error", "xdsl_mode", "wan_type", "wan_cname", "ip_mode", "trans_type", "pppoe_service_name", "mode", "uplink", "page_type", "vlan_enable", "str_serv_list", "conn_status6", "inst_id", "enable", "dscp", "priority", "vlanid", "subnet_mask", "auth_type", "mtu", "dns1", "dns3", "gateway", "work_if_mac", "serv_list", "link_mode", "is_def_gw", "ip_address", "dns2", "enable_pass_through", "conn_status",
 		},
 		nil,

@@ -16,6 +16,22 @@ type LanClient struct {
 	AliasName   string
 }
 
+type LanClientsResponse struct {
+	XMLName        xml.Name `xml:"ajax_response_xml_root"`
+	IFERRORPARAM   string   `xml:"IF_ERRORPARAM"`
+	IFERRORTYPE    string   `xml:"IF_ERRORTYPE"`
+	IFERRORSTR     string   `xml:"IF_ERRORSTR"`
+	IFERRORID      string   `xml:"IF_ERRORID"`
+	OBJACCESSDEVID struct {
+		Instances []LanClientInstance `xml:"Instance"`
+	} `xml:"OBJ_ACCESSDEV_ID"`
+}
+
+type LanClientInstance struct {
+	ParaName  []string `xml:"ParaName"`
+	ParaValue []string `xml:"ParaValue"`
+}
+
 func (s *Session) LoadLanClients() ([]LanClient, error) {
 	url := s.Endpoint + "/?_type=menuData&_tag=accessdev_landevs_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
@@ -27,7 +43,7 @@ func (s *Session) LoadLanClients() ([]LanClient, error) {
 		resp.Body.Close()
 	}()
 
-	var result lanClientsResponse
+	var result LanClientsResponse
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
@@ -37,23 +53,7 @@ func (s *Session) LoadLanClients() ([]LanClient, error) {
 	return result.Convert(), nil
 }
 
-type lanClientsResponse struct {
-	XMLName        xml.Name `xml:"ajax_response_xml_root"`
-	IFERRORPARAM   string   `xml:"IF_ERRORPARAM"`
-	IFERRORTYPE    string   `xml:"IF_ERRORTYPE"`
-	IFERRORSTR     string   `xml:"IF_ERRORSTR"`
-	IFERRORID      string   `xml:"IF_ERRORID"`
-	OBJACCESSDEVID struct {
-		Instances []lanClientInstance `xml:"Instance"`
-	} `xml:"OBJ_ACCESSDEV_ID"`
-}
-
-type lanClientInstance struct {
-	ParaName  []string `xml:"ParaName"`
-	ParaValue []string `xml:"ParaValue"`
-}
-
-func (r lanClientsResponse) Convert() []LanClient {
+func (r LanClientsResponse) Convert() []LanClient {
 	var clients []LanClient
 	for _, inst := range r.OBJACCESSDEVID.Instances {
 		client := LanClient{}

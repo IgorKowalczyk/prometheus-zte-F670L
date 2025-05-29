@@ -28,31 +28,6 @@ type DeviceInfo struct {
 	Uptime int
 }
 
-func (s *Session) LoadDeviceInfo() (*DeviceInfo, error) {
-	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=statusMgr&Menu3Location=0&_=" + strconv.FormatInt(time.Now().Unix(), 10))
-	resp, err := s.Get(s.Endpoint + "/?_type=menuData&_tag=devmgr_statusmgr_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10))
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		io.Copy(io.Discard, resp.Body)
-		resp.Body.Close()
-	}()
-
-	var result InformationResponse
-	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, err
-	}
-
-	if result.IFERRORSTR == "SessionTimeout" {
-		return nil, errors.New("session timeout")
-	}
-
-	return result.Convert(), nil
-}
-
 type InformationResponse struct {
 	XMLName      xml.Name `xml:"ajax_response_xml_root"`
 	Text         string   `xml:",chardata"`
@@ -84,6 +59,31 @@ type InformationResponse struct {
 			ParaValue []string `xml:"ParaValue"`
 		} `xml:"Instance"`
 	} `xml:"OBJ_POWERONTIME_ID"`
+}
+
+func (s *Session) LoadDeviceInfo() (*DeviceInfo, error) {
+	_, _ = s.Get(s.Endpoint + "/?_type=menuView&_tag=statusMgr&Menu3Location=0&_=" + strconv.FormatInt(time.Now().Unix(), 10))
+	resp, err := s.Get(s.Endpoint + "/?_type=menuData&_tag=devmgr_statusmgr_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10))
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
+
+	var result InformationResponse
+	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	if result.IFERRORSTR == "SessionTimeout" {
+		return nil, errors.New("session timeout")
+	}
+
+	return result.Convert(), nil
 }
 
 func (result InformationResponse) Convert() *DeviceInfo {

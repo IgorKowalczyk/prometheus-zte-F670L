@@ -3,6 +3,7 @@ package ont
 import (
 	"encoding/json"
 	"encoding/xml"
+	"io"
 )
 
 type SessionTokenResponse struct {
@@ -36,6 +37,10 @@ func (s *Session) GetLoginToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
 
 	var result LoginToken
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {

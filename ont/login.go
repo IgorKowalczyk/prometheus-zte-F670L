@@ -62,7 +62,11 @@ func Login(endpoint, username, password string) (*Session, error) {
 		return nil, err
 	}
 	if result.LoginNeedRefresh {
-		_, _ = session.Get("http://192.168.1.1/")
+		resp2, _ := session.Get("http://192.168.1.1/")
+		if resp2 != nil {
+			io.Copy(io.Discard, resp2.Body)
+			resp2.Body.Close()
+		}
 		return session, nil
 	}
 

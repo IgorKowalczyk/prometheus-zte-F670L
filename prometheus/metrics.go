@@ -88,12 +88,31 @@ var (
 		nil,
 	)
 
-	wlanAPStatusDesc = prometheus.NewDesc(
-		"ont_wlan_ap_status",
-		"WLAN AP status and statistics",
-		[]string{
-			"inst_id", "alias", "essid", "bssid", "band", "enable", "channel", "encryption", "bytes_sent", "bytes_received",
-		},
+	wlanAPUpDesc = prometheus.NewDesc(
+		"ont_wlan_ap_up",
+		"WLAN AP operational state",
+		[]string{"inst_id", "alias", "band"},
+		nil,
+	)
+
+	wlanAPTxDesc = prometheus.NewDesc(
+		"ont_wlan_ap_tx_bytes_total",
+		"Total transmitted bytes per WLAN AP",
+		[]string{"inst_id", "alias", "band"},
+		nil,
+	)
+
+	wlanAPRxDesc = prometheus.NewDesc(
+		"ont_wlan_ap_rx_bytes_total",
+		"Total received bytes per WLAN AP",
+		[]string{"inst_id", "alias", "band"},
+		nil,
+	)
+
+	wlanAPInfoDesc = prometheus.NewDesc(
+		"ont_wlan_ap_info",
+		"WLAN AP static information",
+		[]string{"inst_id", "alias", "band", "essid", "bssid", "encryption"},
 		nil,
 	)
 
@@ -108,7 +127,7 @@ var (
 		"ont_lan_dhcp_settings",
 		"DHCP server settings from ONT",
 		[]string{
-			"inst_id", "sub_mask", "dns_server1", "dns_server2", "lease_time", "max_address", "subnet_mask",
+			"inst_id", "dns_server1", "dns_server2", "lease_time", "max_address", "subnet_mask",
 			"dns_server_source", "ip_addr", "server_enable", "min_address",
 			"ipv4_dns_origin", "ipv4_assign_lan_ip", "ipv6_dns_origin", "ipv6_assign_lan_ip",
 		},

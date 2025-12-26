@@ -62,7 +62,11 @@ func (c *ONTCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- lanClientStatusDesc
 	ch <- lanDHCPHostDesc
 	ch <- lanDHCPSettingsDesc
-
+	ch <- wanInternetStatusDesc
+	ch <- wlanAPUpDesc
+	ch <- wlanAPTxDesc
+	ch <- wlanAPRxDesc
+	ch <- wlanAPInfoDesc
 }
 
 func sleepQuit(reaason string) {
@@ -101,7 +105,7 @@ func (c *ONTCollector) Collect(ch chan<- prometheus.Metric) {
 	)
 
 	// CPU Usage metrics (loop for each core)
-	cpuUsages := []int{deviceInfo.CPUUsage1, deviceInfo.CPUUsage2, deviceInfo.CPUUsage3, deviceInfo.CPUUsage4}
+	cpuUsages := []int{deviceInfo.CPUUsage1, deviceInfo.CPUUsage2}
 	for i, usage := range cpuUsages {
 		ch <- prometheus.MustNewConstMetric(
 			cpuUsageDesc,
@@ -283,24 +287,53 @@ func (c *ONTCollector) Collect(ch chan<- prometheus.Metric) {
 	wlanAPs, err := c.session.LoadWlanInfo()
 	if err != nil {
 		log.Printf("Error loading WLAN info: %v", err)
-	} else {
-		for _, ap := range wlanAPs {
-			ch <- prometheus.MustNewConstMetric(
-				wlanAPStatusDesc,
-				prometheus.GaugeValue,
-				1,
-				ap.InstID,
-				ap.Alias,
-				ap.ESSID,
-				ap.BSSID,
-				ap.Band,
-				ap.Enable,
-				ap.Channel,
-				ap.Encryption,
-				ap.TotalBytesSent,
-				ap.TotalBytesReceived,
-			)
+		return
+	}
+
+	for _, ap := range wlanAPs {
+		// Up status
+		up := 0.0
+		if ap.Enable {
+			up = 1
 		}
+		ch <- prometheus.MustNewConstMetric(
+			wlanAPUpDesc,
+			prometheus.GaugeValue,
+			up,
+			ap.InstID,
+			ap.Alias,
+			ap.Band,
+		)
+
+		// Counters
+		ch <- prometheus.MustNewConstMetric(
+			wlanAPTxDesc,
+			prometheus.CounterValue,
+			float64(ap.TotalBytesSent),
+			ap.InstID,
+			ap.Alias,
+			ap.Band,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			wlanAPRxDesc,
+			prometheus.CounterValue,
+			float64(ap.TotalBytesReceived),
+			ap.InstID,
+			ap.Alias,
+			ap.Band,
+		)
+
+		ch <- prometheus.MustNewConstMetric(
+			wlanAPInfoDesc,
+			prometheus.GaugeValue,
+			1,
+			ap.InstID,
+			ap.Alias,
+			ap.Band,
+			ap.ESSID,
+			ap.BSSID,
+			ap.Encryption,
+		)
 	}
 
 	lanDHCPHosts, err := c.session.LoadLanDHCPInfo()
@@ -331,7 +364,6 @@ func (c *ONTCollector) Collect(ch chan<- prometheus.Metric) {
 			prometheus.GaugeValue,
 			1,
 			lanDHCPSettings.InstID,
-			lanDHCPSettings.SubMask,
 			lanDHCPSettings.DNSServer1,
 			lanDHCPSettings.DNSServer2,
 			strconv.Itoa(lanDHCPSettings.LeaseTime),

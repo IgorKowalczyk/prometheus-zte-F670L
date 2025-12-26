@@ -14,11 +14,11 @@ type WlanAP struct {
 	ESSID              string
 	BSSID              string
 	Band               string
-	Enable             string
-	Channel            string
 	Encryption         string
-	TotalBytesSent     string
-	TotalBytesReceived string
+	Enable             bool
+	Channel            int
+	TotalBytesSent     uint64
+	TotalBytesReceived uint64
 }
 
 type wlanAPInstance struct {
@@ -60,14 +60,12 @@ func (inst *wlanAPInstance) ToMap() map[string]string {
 }
 
 func (s *Session) LoadWlanInfo() ([]WlanAP, error) {
-	// Trigger the menu to load the WLAN APs	info
-	respMenu, _ := s.Get(s.Endpoint + "/?_type=menuView&_tag=localNetStatus&Menu3Location=0&_" + strconv.FormatInt(time.Now().Unix(), 10))
+	respMenu, _ := s.Get(s.Endpoint + "/?_type=menuView&_tag=localNetStatus&_=" + strconv.FormatInt(time.Now().Unix(), 10))
 	if respMenu != nil {
 		io.Copy(io.Discard, respMenu.Body)
 		respMenu.Body.Close()
 	}
 
-	// Load the WLAN APs info
 	url := s.Endpoint + "/?_type=menuData&_tag=wlan_wlanstatus_lua.lua&_=" + strconv.FormatInt(time.Now().Unix(), 10)
 	resp, err := s.Get(url)
 	if err != nil {
@@ -82,6 +80,7 @@ func (s *Session) LoadWlanInfo() ([]WlanAP, error) {
 	if err := xml.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
+
 	if result.IFERRORSTR != "SUCC" {
 		return nil, errors.New(result.IFERRORSTR)
 	}
@@ -91,43 +90,48 @@ func (s *Session) LoadWlanInfo() ([]WlanAP, error) {
 
 func (r *wlanAPsResponse) Convert() []WlanAP {
 	bandMap := make(map[string]string)
+
 	for _, inst := range r.OBJWLANSETTINGID.Instances {
 		m := inst.ToMap()
-		instID := m["_InstID"]
-		band := m["Band"]
-		if instID != "" && band != "" {
-			bandMap[instID] = band
+		if id := m["_InstID"]; id != "" {
+			bandMap[id] = m["Band"]
 		}
 	}
 
 	var aps []WlanAP
+
 	for _, inst := range r.OBJWLANAPID.Instances {
 		m := inst.ToMap()
+
 		ap := WlanAP{
 			InstID:     m["_InstID"],
 			Alias:      m["Alias"],
 			ESSID:      m["ESSID"],
-			Enable:     m["Enable"],
 			Encryption: m["WPAEncryptType"],
+			Enable:     m["Enable"] == "1",
 		}
 
 		if enc := m["11iEncryptType"]; enc != "" {
 			ap.Encryption = enc
 		}
+
 		wlanViewName := m["WLANViewName"]
 
 		for _, drv := range r.OBJWLANCONFIGDRVID.Instances {
 			drvMap := drv.ToMap()
 			if drvMap["_InstID"] == ap.InstID {
 				ap.BSSID = drvMap["Bssid"]
-				ap.Channel = drvMap["ChannelInUsed"]
-				ap.TotalBytesSent = drvMap["TotalBytesSent"]
-				ap.TotalBytesReceived = drvMap["TotalBytesReceived"]
+
+				ap.Channel, _ = strconv.Atoi(drvMap["ChannelInUsed"])
+				ap.TotalBytesSent, _ = strconv.ParseUint(drvMap["TotalBytesSent"], 10, 64)
+				ap.TotalBytesReceived, _ = strconv.ParseUint(drvMap["TotalBytesReceived"], 10, 64)
 				break
 			}
 		}
+
 		ap.Band = bandMap[wlanViewName]
 		aps = append(aps, ap)
 	}
+
 	return aps
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"prometheus_F670L/ont"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -97,7 +98,7 @@ func (c *ONTCollector) Collect(ch chan<- prometheus.Metric) {
 		deviceInfo.ManufacturerOui,
 		deviceInfo.VersionDate,
 		deviceInfo.BootVersion,
-		deviceInfo.SofwareVersion,
+		deviceInfo.SoftwareVersion,
 		deviceInfo.SoftwareVersionExtended,
 		deviceInfo.SerialNumber,
 		deviceInfo.Model,
@@ -206,7 +207,7 @@ func (c *ONTCollector) Collect(ch chan<- prometheus.Metric) {
 				client.HostName,
 				client.IPAddress,
 				client.IPV6Address,
-				client.MACAddress,
+				strings.ToUpper(client.MACAddress),
 				client.AliasName,
 				essid,
 				strconv.Itoa(client.RSSI),
@@ -232,7 +233,7 @@ func (c *ONTCollector) Collect(ch chan<- prometheus.Metric) {
 				lanClientStatusDesc,
 				prometheus.GaugeValue,
 				1,
-				client.HostName, client.IPAddress, client.IPV6Address, client.MACAddress, client.AliasName,
+				client.HostName, client.IPAddress, client.IPV6Address, strings.ToUpper(client.MACAddress), client.AliasName,
 			)
 		}
 	}
@@ -331,7 +332,7 @@ func (c *ONTCollector) Collect(ch chan<- prometheus.Metric) {
 			ap.Alias,
 			ap.Band,
 			ap.ESSID,
-			ap.BSSID,
+			strings.ToUpper(ap.BSSID),
 			ap.Encryption,
 		)
 	}
@@ -349,7 +350,7 @@ func (c *ONTCollector) Collect(ch chan<- prometheus.Metric) {
 				host.PhyPortName,
 				host.IPAddr,
 				strconv.Itoa(host.ExpiredTime),
-				host.MACAddr,
+				strings.ToUpper(host.MACAddr),
 				host.HostName,
 			)
 		}
